@@ -3,6 +3,7 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import { encodeFunctionData, serializeTransaction } from 'viem';
 import { avalancheFuji } from 'viem/chains';
+import { parseGwei } from 'viem';
 
 const CONTRACT_ADDRESS = '0xF6287416d6075126a820E3963aAbfa18547f775c' as `0x${string}`;
 const FUJI_CHAIN_ID = 43113;
@@ -351,6 +352,36 @@ const campaigns: any[] = [
   },
 ];
 
+function toRpcHex(value: any) {
+  if (typeof value === 'bigint') return '0x' + value.toString(16);
+  if (typeof value === 'number') return '0x' + value.toString(16);
+  if (typeof value === 'string' && /^\d+$/.test(value)) return '0x' + BigInt(value).toString(16);
+  return value;
+}
+
+function sanitizeTxForRpc(tx: any) {
+  const allowedFields = [
+    'from',
+    'to',
+    'gas',
+    'gasPrice',
+    'value',
+    'data',
+    'nonce',
+    'maxFeePerGas',
+    'maxPriorityFeePerGas',
+    'accessList',
+    'chainId',
+  ];
+  const sanitized: any = {};
+  for (const key of allowedFields) {
+    if (tx[key] !== undefined) {
+      sanitized[key] = toRpcHex(tx[key]);
+    }
+  }
+  return sanitized;
+}
+
 // /api/airdrop/create
 app.post('/api/airdrop/create', express.json(), (req: Request, res: Response) => {
   // Permite datos por body o por query
@@ -381,23 +412,14 @@ app.post('/api/airdrop/create', express.json(), (req: Request, res: Response) =>
     value: value,
     data,
     chainId: avalancheFuji.id,
-    type: 'legacy',
-    authorizationList: [
-      {
-        chainId: avalancheFuji.id,
-        address: wallet,
-        nonce: 0,
-        yParity: 0,
-        r: '0x',
-        s: '0x',
-      },
-    ],
-  };
+    gasPrice: parseGwei('10'), // 10 gwei
+    gas: BigInt('100000'), // 100k gas
+  } as const;
 
-  const serialized = serializeTransaction(tx);
+  const sanitizedTx = sanitizeTxForRpc(tx);
 
   const response: ExecutionResponse = {
-    serializedTransaction: JSON.stringify(String(serialized)),
+    serializedTransaction: JSON.stringify(sanitizedTx),
     chainId: avalancheFuji.id.toString(),
   };
 
