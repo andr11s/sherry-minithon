@@ -1,11 +1,14 @@
-import { ExecutionResponse, Metadata } from '@sherrylinks/sdk';
+import { DynamicActionValidationError, ExecutionResponse, Metadata } from '@sherrylinks/sdk';
 import express from 'express';
 import type { Request, Response } from 'express';
-import { encodeFunctionData, serializeTransaction } from 'viem';
+import { encodeFunctionData, serializeTransaction, decodeFunctionResult } from 'viem';
 import { avalancheFuji } from 'viem/chains';
 import { parseGwei } from 'viem';
+import { createPublicClient, http } from 'viem';
 
 const CONTRACT_ADDRESS = '0x1F578Ea168348Ac1883561C2218e8DaF95b96924' as `0x${string}`;
+const FUJI_RPC_URL = 'https://api.avax-test.network/ext/bc/C/rpc' as `0x${string}`;
+
 const FUJI_CHAIN_ID = 43113;
 const ABI = [
   {
@@ -424,27 +427,82 @@ app.post('/api/airdrop/list', (req: Request, res: Response) => {
   res.json({ ...campaigns });
 });
 
+const publicClient = createPublicClient({
+  chain: avalancheFuji,
+  transport: http(FUJI_RPC_URL),
+});
+
 // /api/airdrop/claim
-app.post('/api/airdrop/claim', express.json(), (req: Request, res: Response) => {
-  const { wallet, code, twitterHandle } = req.body;
-  const campaign = campaigns.find((c) => c.id === code);
-  if (!campaign) {
-    res.status(404).json({ error: 'Campaña no encontrada.' });
+app.post('/api/airdrop/claim', express.json(), async (req: Request, res: Response) => {
+  const { wallet, code, twitterHandle } = req.query;
+
+  if (!wallet || !code || !twitterHandle) {
+    res.status(400).json({ message: 'Faltan parámetros requeridos.', status: '400' });
     return;
   }
-  if (campaign.claimed >= campaign.maxWinners) {
-    res.status(400).json({ error: 'Ya se alcanzó el máximo de ganadores.' });
+
+  if (!CONTRACT_ADDRESS) {
+    res.status(500).json({ message: 'Dirección del contrato no definida.' });
     return;
   }
-  // Simulación: solo permite un claim por wallet por campaña
-  if (campaign[wallet]) {
-    res.status(400).json({ error: 'Ya reclamaste en esta campaña.' });
+
+  // Validar si la campaña existe usando la función hasClaimed del contrato
+  try {
+    const data = encodeFunctionData({
+      abi: ABI,
+      functionName: 'hasClaimed',
+      args: [code, wallet],
+    });
+
+    const result = await publicClient.call({
+      to: CONTRACT_ADDRESS,
+      data,
+    });
+
+    const alreadyClaimed = decodeFunctionResult({
+      abi: ABI,
+      functionName: 'hasClaimed',
+      data: result.data as `0x${string}`,
+    });
+
+    if (alreadyClaimed) {
+      const a: DynamicActionValidationError = {
+        message: 'Campaña no encontrada o error al consultar el contrato.',
+        name: 'Campaña no encontrada o error al consultar el contrato.',
+      };
+      res.status(400).json(a);
+      return;
+    }
+  } catch (err) {
+    const error: DynamicActionValidationError = {
+      message: 'Campaña no encontrada o error al consultar el contrato.',
+      name: 'error',
+    };
+    res.status(400).json(error);
     return;
   }
-  // Simulación de validación social (siempre pasa)
-  campaign.claimed += 1;
-  campaign[wallet] = true;
-  res.json({ success: true, message: `¡Airdrop reclamado para ${wallet}!` });
+
+  // Si pasa la validación, prepara la transacción de claim
+  const claimData = encodeFunctionData({
+    abi: ABI,
+    functionName: 'claimAirdrop',
+    args: [code],
+  });
+
+  const claimTx = {
+    to: CONTRACT_ADDRESS,
+    data: claimData,
+    chainId: avalancheFuji.id,
+  } as const;
+
+  const sanitizedClaimTx = sanitizeTxForRpc(claimTx);
+
+  const response: ExecutionResponse = {
+    serializedTransaction: JSON.stringify(sanitizedClaimTx),
+    chainId: avalancheFuji.id.toString(),
+  };
+
+  res.json(response);
 });
 
 function updateCampaignSelectOptions() {
