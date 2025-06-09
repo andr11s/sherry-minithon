@@ -1,0 +1,29 @@
+{
+  "name": "sherry-test-01",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node index.ts",
+    "dev-proof-of-x": "ts-node proofOfX.ts",
+    "dev-proof-of-community": "ts-node proofOfCommunityMetadata.ts",
+    "dev-social-airdrop-factory": "ts-node socialAirdropFactoryMetadata.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@sherrylinks/sdk": "^2.20.14-beta.1",
+    "@types/express": "^5.0.2",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "passport": "^0.7.0",
+    "passport-twitter": "^1.0.4"
+  }
+}
