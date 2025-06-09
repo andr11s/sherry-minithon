@@ -376,11 +376,11 @@ function sanitizeTxForRpc(tx: any) {
 // /api/airdrop/create
 app.post('/api/airdrop/create', express.json(), (req: Request, res: Response) => {
   // Permite datos por body o por query
-  const { wallet, tweetUrl, totalAmount, criteria, maxWinners } = {
+  const { wallet, tweetUrl, totalAmount, criteria, maxWinners, code } = {
     ...req.body,
     ...req.query,
   };
-  if (!wallet || !tweetUrl || !totalAmount || !criteria || !maxWinners) {
+  if (!wallet || !tweetUrl || !totalAmount || !criteria || !maxWinners || !code) {
     res.status(400).json({ error: 'Faltan parámetros requeridos.' });
     return;
   }
@@ -391,11 +391,11 @@ app.post('/api/airdrop/create', express.json(), (req: Request, res: Response) =>
     return;
   }
 
-  // error aqui
+  // Ahora pasamos el código personalizado como primer argumento
   const data = encodeFunctionData({
     abi: ABI,
     functionName: 'createCampaign',
-    args: [tweetUrl, criteria, BigInt(maxWinners)],
+    args: [code, tweetUrl, criteria, BigInt(maxWinners)],
   });
 
   const tx = {
