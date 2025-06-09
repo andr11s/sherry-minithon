@@ -13,36 +13,37 @@ contract SocialAirdropFactory {
         mapping(address => bool) hasClaimed;
     }
 
-    uint256 public campaignCount;
-    mapping(uint256 => Campaign) public campaigns;
+    mapping(string => Campaign) public campaigns;
     mapping(bytes32 => bool) public tweetUrlUsed; // For campaign uniqueness
 
     event CampaignCreated(
-        uint256 indexed campaignId,
+        string indexed campaignId,
         address indexed creator,
         string tweetUrl,
         uint256 totalAmount,
         string criteria,
         uint256 maxWinners
     );
-    event Claimed(uint256 indexed campaignId, address indexed user, uint256 amount);
+    event Claimed(string indexed campaignId, address indexed user, uint256 amount);
 
     // Create a campaign (the creator must send AVAX equal to totalAmount)
     function createCampaign(
+        string memory campaignId,
         string memory tweetUrl,
         string memory criteria,
         uint256 maxWinners
-    ) external payable returns (uint256) {
+    ) external payable {
         require(msg.value > 0, "Must send AVAX for airdrop");
         require(maxWinners > 0, "There must be at least one winner");
         require(bytes(tweetUrl).length > 0, "tweetUrl empty");
         require(bytes(criteria).length > 0, "criteria empty");
+        require(bytes(campaignId).length > 0, "campaignId empty");
+        require(campaigns[campaignId].creator == address(0), "Campaign ID already exists");
 
         bytes32 tweetHash = keccak256(abi.encodePacked(tweetUrl));
         require(!tweetUrlUsed[tweetHash], "Campaign already exists for this tweetUrl");
 
-        campaignCount++;
-        Campaign storage c = campaigns[campaignCount];
+        Campaign storage c = campaigns[campaignId];
         c.creator = msg.sender;
         c.tweetUrl = tweetUrl;
         c.totalAmount = msg.value;
@@ -53,12 +54,11 @@ contract SocialAirdropFactory {
 
         tweetUrlUsed[tweetHash] = true;
 
-        emit CampaignCreated(campaignCount, msg.sender, tweetUrl, msg.value, criteria, maxWinners);
-        return campaignCount;
+        emit CampaignCreated(campaignId, msg.sender, tweetUrl, msg.value, criteria, maxWinners);
     }
 
     // Claim airdrop (backend validates off-chain and only calls if user is eligible)
-    function claimAirdrop(uint256 campaignId) external {
+    function claimAirdrop(string memory campaignId) external {
         Campaign storage c = campaigns[campaignId];
         require(c.active, "Campaign inactive");
         require(!c.hasClaimed[msg.sender], "Already claimed");
@@ -80,10 +80,7 @@ contract SocialAirdropFactory {
     }
 
     // Check if a user has already claimed in a campaign
-    function hasClaimed(uint256 campaignId, address user) external view returns (bool) {
+    function hasClaimed(string memory campaignId, address user) external view returns (bool) {
         return campaigns[campaignId].hasClaimed[user];
     }
-
-    // Optionally: allow creator to withdraw unclaimed funds after a period
-    // function withdrawUnclaimed(uint256 campaignId) external { ... }
 }

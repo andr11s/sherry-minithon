@@ -5,7 +5,7 @@ import { encodeFunctionData, serializeTransaction } from 'viem';
 import { avalancheFuji } from 'viem/chains';
 import { parseGwei } from 'viem';
 
-const CONTRACT_ADDRESS = '0xF6287416d6075126a820E3963aAbfa18547f775c' as `0x${string}`;
+const CONTRACT_ADDRESS = '0x1F578Ea168348Ac1883561C2218e8DaF95b96924' as `0x${string}`;
 const FUJI_CHAIN_ID = 43113;
 const ABI = [
   {
@@ -13,9 +13,9 @@ const ABI = [
     inputs: [
       {
         indexed: true,
-        internalType: 'uint256',
+        internalType: 'string',
         name: 'campaignId',
-        type: 'uint256',
+        type: 'string',
       },
       {
         indexed: true,
@@ -56,9 +56,9 @@ const ABI = [
     inputs: [
       {
         indexed: true,
-        internalType: 'uint256',
+        internalType: 'string',
         name: 'campaignId',
-        type: 'uint256',
+        type: 'string',
       },
       {
         indexed: true,
@@ -77,24 +77,11 @@ const ABI = [
     type: 'event',
   },
   {
-    inputs: [],
-    name: 'campaignCount',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
     inputs: [
       {
-        internalType: 'uint256',
+        internalType: 'string',
         name: '',
-        type: 'uint256',
+        type: 'string',
       },
     ],
     name: 'campaigns',
@@ -141,9 +128,9 @@ const ABI = [
   {
     inputs: [
       {
-        internalType: 'uint256',
+        internalType: 'string',
         name: 'campaignId',
-        type: 'uint256',
+        type: 'string',
       },
     ],
     name: 'claimAirdrop',
@@ -153,6 +140,11 @@ const ABI = [
   },
   {
     inputs: [
+      {
+        internalType: 'string',
+        name: 'campaignId',
+        type: 'string',
+      },
       {
         internalType: 'string',
         name: 'tweetUrl',
@@ -170,22 +162,16 @@ const ABI = [
       },
     ],
     name: 'createCampaign',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
+    outputs: [],
     stateMutability: 'payable',
     type: 'function',
   },
   {
     inputs: [
       {
-        internalType: 'uint256',
+        internalType: 'string',
         name: 'campaignId',
-        type: 'uint256',
+        type: 'string',
       },
       {
         internalType: 'address',
@@ -275,6 +261,12 @@ export const socialAirdropFactoryMetadata: Metadata = {
           type: 'number',
           required: true,
         },
+        {
+          name: 'code',
+          label: 'Como quieres identificar tu campaña?',
+          type: 'text',
+          required: true,
+        },
       ],
     },
     {
@@ -291,11 +283,10 @@ export const socialAirdropFactoryMetadata: Metadata = {
           required: true,
         },
         {
-          name: 'campaignId',
-          label: 'ID de la Campaña',
-          type: 'select',
+          name: 'code',
+          label: 'Código de campaña',
+          type: 'text',
           required: true,
-          options: [],
         },
         {
           name: 'twitterHandle',
@@ -335,7 +326,7 @@ const campaigns: any[] = [
   {
     id: 'cmp-001',
     creator: '0x123...abc',
-    tweetUrl: 'https://twitter.com/example/status/1234567890',
+    tweetUrl: 'https://twitter.com/ex11ample/status/1234567890',
     totalAmount: 10,
     criteria: 'like',
     maxWinners: 5,
@@ -412,8 +403,6 @@ app.post('/api/airdrop/create', express.json(), (req: Request, res: Response) =>
     value: value,
     data,
     chainId: avalancheFuji.id,
-    gasPrice: parseGwei('10'), // 10 gwei
-    gas: BigInt('100000'), // 100k gas
   } as const;
 
   const sanitizedTx = sanitizeTxForRpc(tx);
@@ -437,8 +426,8 @@ app.post('/api/airdrop/list', (req: Request, res: Response) => {
 
 // /api/airdrop/claim
 app.post('/api/airdrop/claim', express.json(), (req: Request, res: Response) => {
-  const { wallet, campaignId, twitterHandle } = req.body;
-  const campaign = campaigns.find((c) => c.id === campaignId);
+  const { wallet, code, twitterHandle } = req.body;
+  const campaign = campaigns.find((c) => c.id === code);
   if (!campaign) {
     res.status(404).json({ error: 'Campaña no encontrada.' });
     return;
@@ -469,7 +458,7 @@ function updateCampaignSelectOptions() {
     (a) => a.label === 'Claim de Airdrop' && a.type === 'dynamic'
   );
   if (claimAction && 'params' in claimAction && Array.isArray(claimAction.params)) {
-    const campaignIdParam = (claimAction.params as any[]).find((p: any) => p.name === 'campaignId');
+    const campaignIdParam = (claimAction.params as any[]).find((p: any) => p.name === 'code');
     if (campaignIdParam && 'options' in campaignIdParam) {
       campaignIdParam.options = options;
     }
