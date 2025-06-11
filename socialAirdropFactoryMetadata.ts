@@ -5,6 +5,17 @@ import { encodeFunctionData, serializeTransaction, decodeFunctionResult } from '
 import { avalancheFuji } from 'viem/chains';
 import { parseGwei } from 'viem';
 import { createPublicClient, http } from 'viem';
+import getThreadAnswers from './threadAnswers';
+
+interface Campaign {
+  creator: `0x${string}`;
+  tweetUrl: string;
+  totalAmount: bigint;
+  criteria: string;
+  maxWinners: bigint;
+  claimed: bigint;
+  active: boolean;
+}
 
 const CONTRACT_ADDRESS = '0x1F578Ea168348Ac1883561C2218e8DaF95b96924' as `0x${string}`;
 const FUJI_RPC_URL = 'https://api.avax-test.network/ext/bc/C/rpc' as `0x${string}`;
@@ -432,7 +443,6 @@ const publicClient = createPublicClient({
   transport: http(FUJI_RPC_URL),
 });
 
-// /api/airdrop/claim
 app.post('/api/airdrop/claim', express.json(), async (req: Request, res: Response) => {
   const { wallet, code, twitterHandle } = req.query;
 
@@ -446,12 +456,12 @@ app.post('/api/airdrop/claim', express.json(), async (req: Request, res: Respons
     return;
   }
 
-  // Validar si la campaña existe usando la función hasClaimed del contrato
+  // Obtener información de la campaña usando la función campaigns del contrato
   try {
     const data = encodeFunctionData({
       abi: ABI,
-      functionName: 'hasClaimed',
-      args: [code, wallet],
+      functionName: 'campaigns',
+      args: [code],
     });
 
     const result = await publicClient.call({
@@ -459,23 +469,63 @@ app.post('/api/airdrop/claim', express.json(), async (req: Request, res: Respons
       data,
     });
 
-    const alreadyClaimed = decodeFunctionResult({
+    const campaignInfo = decodeFunctionResult({
+      abi: ABI,
+      functionName: 'campaigns',
+      data: result.data as `0x${string}`,
+    }) as [
+      Campaign['creator'],
+      Campaign['tweetUrl'],
+      Campaign['totalAmount'],
+      Campaign['criteria'],
+      Campaign['maxWinners'],
+      Campaign['claimed'],
+      Campaign['active']
+    ];
+
+    const tweetUrl = campaignInfo[1];
+    const threadId = tweetUrl.split('/').pop() as string;
+
+    const threadAnswers = await getThreadAnswers(threadId);
+
+    const userCommented = threadAnswers?.some((answer) => answer.userHandle === twitterHandle && answer.address === wallet);
+
+    if (!userCommented) {
+      const error: DynamicActionValidationError = {
+        message: 'No has comentado en el tweet o no eres dueño de la wallet ingresada.',
+        name: 'User Not Commented',
+      };
+      res.status(400).json(error);
+      return;
+    }
+
+    if (!campaignInfo[6]) {
+      const error: DynamicActionValidationError = {
+        message: 'La campaña no está activa.',
+        name: 'Campaign Inactive',
+      };
+      res.status(400).json(error);
+      return;
+    }
+
+    const alreadyClaimed = await publicClient.readContract({
+      address: CONTRACT_ADDRESS,
       abi: ABI,
       functionName: 'hasClaimed',
-      data: result.data as `0x${string}`,
+      args: [code, wallet],
     });
 
     if (alreadyClaimed) {
-      const a: DynamicActionValidationError = {
-        message: 'Campaña no encontrada o error al consultar el contrato.',
-        name: 'Campaña no encontrada o error al consultar el contrato.',
+      const error: DynamicActionValidationError = {
+        message: 'Ya has reclamado el airdrop.',
+        name: 'Already Claimed',
       };
-      res.status(400).json(a);
+      res.status(400).json(error);
       return;
     }
   } catch (err) {
     const error: DynamicActionValidationError = {
-      message: 'Campaña no encontrada o error al consultar el contrato.',
+      message: 'Error al obtener información de la campaña.',
       name: 'error',
     };
     res.status(400).json(error);
@@ -504,29 +554,6 @@ app.post('/api/airdrop/claim', express.json(), async (req: Request, res: Respons
 
   res.json(response);
 });
-
-function updateCampaignSelectOptions() {
-  const options = campaigns.map((c) => ({
-    label: `${c.tweetUrl} (${c.criteria})`,
-    value: c.id,
-  }));
-
-  // Busca la acción de claim y actualiza sus opciones solo si es de tipo 'dynamic'
-  const claimAction = socialAirdropFactoryMetadata.actions.find(
-    (a) => a.label === 'Claim de Airdrop' && a.type === 'dynamic'
-  );
-  if (claimAction && 'params' in claimAction && Array.isArray(claimAction.params)) {
-    const campaignIdParam = (claimAction.params as any[]).find((p: any) => p.name === 'code');
-    if (campaignIdParam && 'options' in campaignIdParam) {
-      campaignIdParam.options = options;
-    }
-  }
-}
-
-// Actualiza las opciones cada 10 segundos
-global.setInterval(updateCampaignSelectOptions, 10000);
-// También actualiza al iniciar el servidor
-updateCampaignSelectOptions();
 
 app.listen(PORT, () => {
   console.log(`Servidor Social Airdrop Factory escuchando en http://localhost:${PORT}`);
