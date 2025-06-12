@@ -1,14 +1,14 @@
-# Social Airdrop Factory
+# SocialDrops
 
 ## Descripción
 
-**Social Airdrop Factory** es una mini app que permite crear y participar en campañas de airdrop social utilizando Twitter y la blockchain de Avalanche. Los usuarios pueden configurar campañas con criterios sociales (like, retweet, reply, follow) y repartir recompensas de forma automática y transparente entre los participantes que cumplan los requisitos.
+**SocialDrops** es una mini app que permite crear y participar en campañas de airdrop social utilizando Twitter y la blockchain de Avalanche. Los usuarios pueden configurar campañas con criterios sociales (like, retweet, reply, follow) y repartir recompensas de forma automática y transparente entre los participantes que cumplan los requisitos.
 
 ---
 
 ## ¿Qué problema resuelve?
 
-En el ecosistema cripto, los airdrops suelen ser manuales, poco transparentes y difíciles de auditar. Social Airdrop Factory automatiza y descentraliza la distribución de recompensas sociales, permitiendo a cualquier usuario crear campañas personalizadas y a los participantes reclamar su parte de forma segura, sin depender de intermediarios.
+En el ecosistema cripto, los airdrops suelen ser manuales, poco transparentes y difíciles de auditar. SocialDrops automatiza y descentraliza la distribución de recompensas sociales, permitiendo a cualquier usuario crear campañas personalizadas y a los participantes reclamar su parte de forma segura, sin depender de intermediarios.
 
 ---
 
@@ -34,7 +34,7 @@ En el ecosistema cripto, los airdrops suelen ser manuales, poco transparentes y 
 - **Eventos:** `CampaignCreated`, `Claimed` para trazabilidad y transparencia.
 - **Algoritmo único:** Distribución automática y equitativa del monto entre los ganadores, cierre automático al alcanzar el máximo de ganadores, y unicidad por tweet.
 
-### Backend (`socialAirdropFactoryMetadata.ts`)
+### Backend (`socialDropsMetadata.ts`)
 
 - **Endpoints:**
   - `/api/airdrop/create`: Prepara la transacción para crear una campaña, validando parámetros y generando la data para el contrato.
@@ -54,7 +54,7 @@ En el ecosistema cripto, los airdrops suelen ser manuales, poco transparentes y 
    ```
 2. Ejecuta el backend:
    ```bash
-   npm run dev-social-airdrop-factory
+   npm run dev-social-drops
    ```
 3. El contrato debe estar desplegado en Avalanche Fuji (testnet). Actualiza la dirección en el backend si es necesario.
 

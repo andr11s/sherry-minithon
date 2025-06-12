@@ -225,10 +225,10 @@ const ABI = [
   },
 ];
 
-export const socialAirdropFactoryMetadata: Metadata = {
+export const socialDrops: Metadata = {
   url: 'https://sherry.social',
   icon: 'https://kfrzkvoejzjkugwosqxx.supabase.co/storage/v1/object/public/images//BuyCoffee-Miniapp.png',
-  title: 'Social Airdrop Factory',
+  title: 'SocialDrops',
   description: 'Crea y participa en campañas de airdrop social usando Twitter y Avalanche.',
   baseUrl: 'https://6v1kgmz3-3000.use2.devtunnels.ms',
   actions: [
@@ -331,31 +331,9 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req: Request, res: Response) => {
-  console.log('Solicitud recibida en /social-airdrop-factory-metadata');
-  res.json(socialAirdropFactoryMetadata);
+  console.log('Solicitud recibida en /social-drops-metadata');
+  res.json(socialDrops);
 });
-
-// Simulación de almacenamiento en memoria para campañas
-const campaigns: any[] = [
-  {
-    id: 'cmp-001',
-    creator: '0x123...abc',
-    tweetUrl: 'https://twitter.com/ex11ample/status/1234567890',
-    totalAmount: 10,
-    criteria: 'like',
-    maxWinners: 5,
-    claimed: 2,
-  },
-  {
-    id: 'cmp-002',
-    creator: '0x456...def',
-    tweetUrl: 'https://twitter.com/example/status/9876543210',
-    totalAmount: 5,
-    criteria: 'retweet',
-    maxWinners: 3,
-    claimed: 1,
-  },
-];
 
 function toRpcHex(value: any) {
   if (typeof value === 'bigint') return '0x' + value.toString(16);
@@ -387,9 +365,7 @@ function sanitizeTxForRpc(tx: any) {
   return sanitized;
 }
 
-// /api/airdrop/create
 app.post('/api/airdrop/create', express.json(), (req: Request, res: Response) => {
-  // Permite datos por body o por query
   const { wallet, tweetUrl, totalAmount, criteria, maxWinners, code } = {
     ...req.body,
     ...req.query,
@@ -405,7 +381,6 @@ app.post('/api/airdrop/create', express.json(), (req: Request, res: Response) =>
     return;
   }
 
-  // Ahora pasamos el código personalizado como primer argumento
   const data = encodeFunctionData({
     abi: ABI,
     functionName: 'createCampaign',
@@ -431,11 +406,6 @@ app.post('/api/airdrop/create', express.json(), (req: Request, res: Response) =>
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.header('Content-Type', 'application/json');
   res.json(response);
-});
-
-// /api/airdrop/list
-app.post('/api/airdrop/list', (req: Request, res: Response) => {
-  res.json({ ...campaigns });
 });
 
 const publicClient = createPublicClient({
@@ -556,5 +526,5 @@ app.post('/api/airdrop/claim', express.json(), async (req: Request, res: Respons
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor Social Airdrop Factory escuchando en http://localhost:${PORT}`);
+  console.log(`Servidor SocialDrops escuchando en http://localhost:${PORT}`);
 });

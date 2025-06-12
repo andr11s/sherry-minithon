@@ -1,13 +1,10 @@
 {
-  "name": "sherry-test-01",
+  "name": "social-drops",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node index.ts",
-    "dev-proof-of-x": "ts-node proofOfX.ts",
-    "dev-proof-of-community": "ts-node proofOfCommunityMetadata.ts",
-    "dev-social-airdrop-factory": "ts-node socialAirdropFactoryMetadata.ts"
+    "dev": "ts-node socialDrops.ts"
   },
   "keywords": [],
   "author": "",
