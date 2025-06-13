@@ -2,10 +2,10 @@ import { Metadata } from '../interfaces/types';
 
 export const socialDrops: Metadata = {
   url: 'https://sherry.social',
-  icon: 'https://6v1kgmz3-3000.use2.devtunnels.ms/public/img/social_drop_image_main.jpeg',
+  icon: 'https://sherry-minithon.onrender.com/public/img/social_drop_image_main.jpeg',
   title: 'SocialDrops',
   description: 'Crea y participa en campañas de airdrop social usando Twitter y Avalanche.',
-  baseUrl: 'https://6v1kgmz3-3000.use2.devtunnels.ms',
+  baseUrl: 'https://sherry-minithon.onrender.com',
   actions: [
     {
       type: 'dynamic',
