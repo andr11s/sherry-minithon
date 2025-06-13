@@ -2,7 +2,7 @@
 
 ## Descripción
 
-**SocialDrops** es una mini app que permite crear y participar en campañas de airdrop social utilizando Twitter y la blockchain de Avalanche. Los usuarios pueden configurar campañas con criterios sociales (like, retweet, reply, follow) y repartir recompensas de forma automática y transparente entre los participantes que cumplan los requisitos.
+**SocialDrops** es una mini app que permite crear y participar en campañas de airdrop social utilizando Arena Social y la blockchain de Avalanche. Los usuarios pueden configurar campañas con criterios sociales (comment) y repartir recompensas de forma automática y transparente entre los participantes que cumplan los requisitos.
 
 ---
 
@@ -15,7 +15,7 @@ En el ecosistema cripto, los airdrops suelen ser manuales, poco transparentes y 
 ## ¿Por qué es único?
 
 - Permite crear campañas de airdrop con múltiples parámetros sociales y económicos.
-- Cada campaña es única y está asociada a un tweet específico, evitando duplicados.
+- Cada campaña es única y está asociada a un post específico, evitando duplicados.
 - El contrato inteligente gestiona la lógica de distribución, validación y cierre automático de campañas.
 - El backend valida la elegibilidad de los usuarios y prepara transacciones personalizadas para cada acción.
 - Interfaz amigable y mensajes de error claros para el usuario.
@@ -26,13 +26,13 @@ En el ecosistema cripto, los airdrops suelen ser manuales, poco transparentes y 
 
 ### Contrato Inteligente (`contrato.sol`)
 
-- **Estructura Campaign:** Almacena datos clave de cada campaña (creador, tweet, monto, criterio, ganadores, etc.).
+- **Estructura Campaign:** Almacena datos clave de cada campaña (creador, post, monto, criterio, ganadores, etc.).
 - **Funciones principales:**
-  - `createCampaign`: Crea una campaña única, asociada a un tweet y parámetros personalizados.
+  - `createCampaign`: Crea una campaña única, asociada a un post y parámetros personalizados.
   - `claimAirdrop`: Permite a los usuarios reclamar su parte si cumplen los criterios y no han reclamado antes.
   - `hasClaimed`: Consulta si un usuario ya reclamó en una campaña.
 - **Eventos:** `CampaignCreated`, `Claimed` para trazabilidad y transparencia.
-- **Algoritmo único:** Distribución automática y equitativa del monto entre los ganadores, cierre automático al alcanzar el máximo de ganadores, y unicidad por tweet.
+- **Algoritmo único:** Distribución automática y equitativa del monto entre los ganadores, cierre automático al alcanzar el máximo de ganadores, y unicidad por post.
 
 ### Backend (`socialDropsMetadata.ts`)
 
@@ -54,7 +54,7 @@ En el ecosistema cripto, los airdrops suelen ser manuales, poco transparentes y 
    ```
 2. Ejecuta el backend:
    ```bash
-   npm run dev-social-drops
+   npm run dev
    ```
 3. El contrato debe estar desplegado en Avalanche Fuji (testnet). Actualiza la dirección en el backend si es necesario.
 
@@ -63,7 +63,7 @@ En el ecosistema cripto, los airdrops suelen ser manuales, poco transparentes y 
 ## Pruebas
 
 - El contrato ha sido probado para:
-  - Prevenir campañas duplicadas por tweet o ID.
+  - Prevenir campañas duplicadas por post o ID.
   - Manejar correctamente el límite de ganadores.
   - Distribuir el monto de forma equitativa.
   - Prevenir reclamos dobles.
@@ -74,9 +74,9 @@ En el ecosistema cripto, los airdrops suelen ser manuales, poco transparentes y 
 
 ## Innovación y Creatividad
 
-- **Caso de uso único:** Automatiza campañas de airdrop social, integrando Twitter y blockchain.
-- **Algoritmo innovador:** Distribución automática, unicidad por tweet, cierre automático.
-- **Múltiples parámetros:** Tweet, monto, criterio social, máximo de ganadores, código personalizado.
+- **Caso de uso único:** Automatiza campañas de airdrop social, integrando Social Arena y blockchain.
+- **Algoritmo innovador:** Distribución automática, unicidad por post, cierre automático.
+- **Múltiples parámetros:** Post, monto, criterio social, máximo de ganadores, código personalizado.
 - **Aplicación práctica:** Creador de campañas, participantes y validación de elegibilidad, todo sin intermediarios.
 
 ---
