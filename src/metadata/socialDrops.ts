@@ -29,7 +29,7 @@ export const socialDrops: Metadata = {
         },
         {
           name: 'twitterHandle',
-          label: 'Usuario de X',
+          label: 'Usuario de Sherry Social',
           type: 'string',
           required: true,
         },
@@ -50,7 +50,7 @@ export const socialDrops: Metadata = {
         },
         {
           name: 'tweetUrl',
-          label: 'URL del Tweet',
+          label: 'URL del Post de Sherry Social',
           type: 'string',
           required: true,
         },
@@ -81,7 +81,7 @@ export const socialDrops: Metadata = {
         },
         {
           name: 'code',
-          label: 'Como quieres identificar tu campaña?',
+          label: 'Crea el código de tu campaña de airdrop para que los usuarios lo utilicen',
           type: 'text',
           required: true,
         },
