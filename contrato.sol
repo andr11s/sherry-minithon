@@ -25,6 +25,7 @@ contract SocialAirdropFactory {
         uint256 maxWinners
     );
     event Claimed(string indexed campaignId, address indexed user, uint256 amount);
+    event DebugAmount(uint256 amount);
 
     // Create a campaign (the creator must send AVAX equal to totalAmount)
     function createCampaign(
@@ -64,19 +65,34 @@ contract SocialAirdropFactory {
         require(!c.hasClaimed[msg.sender], "Already claimed");
         require(c.claimed < c.maxWinners, "Max winners reached");
 
-        uint256 amount = c.totalAmount / c.maxWinners;
+        uint256 amountPerWinner = c.totalAmount / c.maxWinners;
+        uint256 amountToSend;
+
+        // Si es el último, recibe todo el remanente
+        if (c.claimed + 1 == c.maxWinners) {
+            amountToSend = address(this).balance;
+            // Evento de advertencia si hay remanente
+            if (amountToSend > amountPerWinner) {
+                emit DebugAmount(amountToSend - amountPerWinner); // Remanente extra
+            }
+        } else {
+            amountToSend = amountPerWinner;
+        }
+
+        require(amountToSend > 0, "Amount to send is zero");
+        require(address(this).balance >= amountToSend, "Insufficient contract balance");
+
         c.hasClaimed[msg.sender] = true;
         c.claimed += 1;
 
-        // If last claim, deactivate campaign
         if (c.claimed == c.maxWinners) {
             c.active = false;
         }
 
-        (bool sent, ) = msg.sender.call{value: amount}("");
+        (bool sent, ) = msg.sender.call{value: amountToSend}("");
         require(sent, "AVAX transfer failed");
 
-        emit Claimed(campaignId, msg.sender, amount);
+        emit Claimed(campaignId, msg.sender, amountToSend);
     }
 
     // Check if a user has already claimed in a campaign
