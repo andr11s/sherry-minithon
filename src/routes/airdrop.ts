@@ -91,10 +91,8 @@ router.post('/claim', express.json(), async (req, res) => {
 
     const tweetUrl = campaignInfo[1];
     const threadId = tweetUrl.split('/').pop() as string;
-    console.log('threadId', threadId);
 
     const threadAnswers = await getThreadAnswers(threadId);
-    console.log('threadAnswers', threadAnswers);
 
     const userCommented = threadAnswers?.some(
       (answer) =>
