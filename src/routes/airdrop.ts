@@ -16,10 +16,6 @@ import getThreadAnswers from '../services/threadAnswers';
 const router = Router();
 
 router.post('/create', express.json(), (req, res) => {
-  console.log('--------------------------------');
-  console.log(req.query);
-  console.log(req.body);
-
   const { wallet, tweetUrl, totalAmount, criteria, maxWinners, code } = Object.assign(
     Object.assign({}, req.body),
     req.query
@@ -61,7 +57,7 @@ router.post('/create', express.json(), (req, res) => {
 
 router.post('/claim', express.json(), async (req, res) => {
   const { wallet, code, twitterHandle } = Object.assign(Object.assign({}, req.body), req.query);
-  console.log('--------------------------------');
+
   if (!wallet || !code || !twitterHandle) {
     res.status(400).json({ message: 'Faltan parámetros requeridos.', status: '400' });
     return;
@@ -98,6 +94,7 @@ router.post('/claim', express.json(), async (req, res) => {
     console.log('threadId', threadId);
 
     const threadAnswers = await getThreadAnswers(threadId);
+    console.log('threadAnswers', threadAnswers);
 
     const userCommented = threadAnswers?.some((answer) => answer.userHandle === twitterHandle && answer.address === wallet);
 
