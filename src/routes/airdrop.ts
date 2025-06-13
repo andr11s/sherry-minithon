@@ -96,7 +96,11 @@ router.post('/claim', express.json(), async (req, res) => {
     const threadAnswers = await getThreadAnswers(threadId);
     console.log('threadAnswers', threadAnswers);
 
-    const userCommented = threadAnswers?.some((answer) => answer.userHandle === twitterHandle && answer.address === wallet);
+    const userCommented = threadAnswers?.some(
+      (answer) =>
+        answer.userHandle.trim().toLowerCase() === twitterHandle.trim().toLowerCase() &&
+        answer.address.trim().toLowerCase() === wallet.trim().toLowerCase()
+    );
 
     if (!userCommented) {
       const error: DynamicActionValidationError = {
