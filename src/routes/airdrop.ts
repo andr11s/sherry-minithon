@@ -11,7 +11,7 @@ import {
   DynamicActionValidationError,
 } from '../interfaces/types';
 import express from 'express';
-import getThreadAnswers from '../../threadAnswers';
+import getThreadAnswers from '../services/threadAnswers';
 
 const router = Router();
 

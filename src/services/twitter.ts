@@ -3,7 +3,7 @@ interface ThreadAnswer {
   address: string;
 }
 
-export default async function getThreadAnswers(threadId: string): Promise<ThreadAnswer[]> {
+export default async function getThreadAnswersTwitter(threadId: string): Promise<ThreadAnswer[]> {
   // TODO: Implementar la lógica real de Twitter
   // Por ahora retornamos datos de prueba
   return [
