@@ -49,7 +49,7 @@ router.post('/create', express.json(), (req, res) => {
 
   const response: ExecutionResponse = {
     serializedTransaction: JSON.stringify(sanitizedTx),
-    chainId: avalancheFuji.id.toString(),
+    chainId: avalancheFuji.id,
   };
 
   res.json(response);
@@ -150,7 +150,7 @@ router.post('/claim', express.json(), async (req, res) => {
 
     const response: ExecutionResponse = {
       serializedTransaction: JSON.stringify(sanitizedClaimTx),
-      chainId: avalancheFuji.id.toString(),
+      chainId: avalancheFuji.id,
     };
 
     res.json(response);

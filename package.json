@@ -17,12 +17,13 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@sherrylinks/sdk": "^2.20.14-beta.1",
+    "@sherrylinks/sdk": "^2.28.24-beta.1",
     "@types/express": "^5.0.2",
     "axios": "^1.9.0",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
     "passport": "^0.7.0",
-    "passport-twitter": "^1.0.4"
+    "passport-twitter": "^1.0.4",
+    "viem": "^2.33.3"
   }
 }

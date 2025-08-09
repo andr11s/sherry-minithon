@@ -12,7 +12,7 @@ export const socialDrops: Metadata = {
       type: 'dynamic',
       label: 'Claim de Airdrop',
       description: 'Reclama tu parte del airdrop si cumples los criterios sociales.',
-      chains: { source: 'avalanche' },
+      chains: { source: 43113 },
       path: '/api/airdrop/claim',
       params: [
         {
@@ -31,58 +31,6 @@ export const socialDrops: Metadata = {
           name: 'twitterHandle',
           label: 'Usuario de Sherry Social',
           type: 'string',
-          required: true,
-        },
-      ],
-    },
-    {
-      type: 'dynamic',
-      label: 'Crear Campaña de Airdrop',
-      description: 'Configura una campaña de airdrop social: define el tweet, monto y criterios.',
-      chains: { source: 'fuji' },
-      path: '/api/airdrop/create',
-      params: [
-        {
-          name: 'wallet',
-          label: 'Tu Wallet',
-          type: 'string',
-          required: true,
-        },
-        {
-          name: 'tweetUrl',
-          label: 'URL del Post de Sherry Social',
-          type: 'string',
-          required: true,
-        },
-        {
-          name: 'totalAmount',
-          label: 'Monto Total a Repartir (AVAX)',
-          type: 'number',
-          required: true,
-        },
-        {
-          name: 'criteria',
-          label: 'Criterio de Participación',
-          type: 'select',
-          required: true,
-          options: [
-            // { label: 'Like', value: 'like' },
-            // { label: 'Retweet', value: 'retweet' },
-            // { label: 'Reply', value: 'reply' },
-            // { label: 'Follow', value: 'follow' },
-            { label: 'Comentario', value: 'comment' },
-          ],
-        },
-        {
-          name: 'maxWinners',
-          label: 'Máximo de Ganadores',
-          type: 'number',
-          required: true,
-        },
-        {
-          name: 'code',
-          label: 'Crea el código de tu campaña de airdrop para que los usuarios lo utilicen',
-          type: 'text',
           required: true,
         },
       ],
