@@ -6,7 +6,7 @@ import express from 'express';
 
 const router = Router();
 
-// Arena Router ABI for AVAX → UVD swap
+// Arena Router ABI (complete)
 const ARENA_ROUTER_ABI = [
   {
     inputs: [
@@ -18,6 +18,29 @@ const ARENA_ROUTER_ABI = [
     name: 'swapExactAVAXForTokens',
     outputs: [{ internalType: 'uint256[]', name: 'amounts', type: 'uint256[]' }],
     stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: 'amountIn', type: 'uint256' },
+      { internalType: 'uint256', name: 'amountOutMin', type: 'uint256' },
+      { internalType: 'address[]', name: 'path', type: 'address[]' },
+      { internalType: 'address', name: 'to', type: 'address' },
+      { internalType: 'uint256', name: 'deadline', type: 'uint256' },
+    ],
+    name: 'swapExactTokensForAVAX',
+    outputs: [{ internalType: 'uint256[]', name: 'amounts', type: 'uint256[]' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: 'amountIn', type: 'uint256' },
+      { internalType: 'address[]', name: 'path', type: 'address[]' },
+    ],
+    name: 'getAmountsOut',
+    outputs: [{ internalType: 'uint256[]', name: 'amounts', type: 'uint256[]' }],
+    stateMutability: 'view',
     type: 'function',
   },
 ] as const;
