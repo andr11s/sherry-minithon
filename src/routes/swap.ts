@@ -113,7 +113,7 @@ router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> =>
       fromToken = params.get('fromToken');
       toToken = params.get('toToken');
       amount = params.get('amount');
-      slippage = params.get('slippage') || '0.5';
+      slippage = params.get('slippage') || '0.1';
     } else {
       // Fallback: try to get from request body or use defaults
       const bodyParams = req.body?.params || {};
@@ -127,7 +127,7 @@ router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> =>
       fromToken = bodyParams.fromToken || queryParams.fromToken || 'AVAX';
       toToken = bodyParams.toToken || queryParams.toToken || 'UVD';
       amount = bodyParams.amount || queryParams.amount || '0.001'; // Default amount for testing
-      slippage = bodyParams.slippage || queryParams.slippage || '0.5';
+      slippage = bodyParams.slippage || queryParams.slippage || '0.1';
     }
 
     console.log('Extracted from header URL:', {

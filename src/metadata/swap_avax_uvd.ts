@@ -1,42 +1,16 @@
 import { Metadata } from '../interfaces/types';
 
-// Arena Router ABI for AVAX → UVD swap
-const ARENA_ROUTER_ABI = [
-  {
-    inputs: [
-      { internalType: 'uint256', name: 'amountOutMin', type: 'uint256' },
-      { internalType: 'address[]', name: 'path', type: 'address[]' },
-      { internalType: 'address', name: 'to', type: 'address' },
-      { internalType: 'uint256', name: 'deadline', type: 'uint256' },
-    ],
-    name: 'swapExactAVAXForTokens',
-    outputs: [{ internalType: 'uint256[]', name: 'amounts', type: 'uint256[]' }],
-    stateMutability: 'payable',
-    type: 'function' as const,
-  },
-  {
-    inputs: [
-      { internalType: 'uint256', name: 'amountIn', type: 'uint256' },
-      { internalType: 'address[]', name: 'path', type: 'address[]' },
-    ],
-    name: 'getAmountsOut',
-    outputs: [{ internalType: 'uint256[]', name: 'amounts', type: 'uint256[]' }],
-    stateMutability: 'view',
-    type: 'function' as const,
-  },
-] as const;
-
 export const swapAvaxUvd: Metadata = {
   baseUrl: 'https://sherry-minithon.onrender.com',
   url: 'https://chat.sherry.social/accounts/byparcero_',
-  icon: 'https://sherry-minithon.onrender.com/public/img/social_drop_image_main.jpeg',
+  icon: 'https://sherry-minithon.onrender.com/public/img/swap_avax_uvd.jpeg',
   title: 'Swap AVAX for UVD',
-  description: 'Swap AVAX tokens for UVD tokens using Arena Router',
+  description: 'Swap AVAX tokens for Ultravioleta DAO Token UVD',
   actions: [
     {
       type: 'dynamic',
       label: 'Confirm Swap AVAX → UVD',
-      description: 'Obtain your favorite Token on Arena DEX',
+      description: 'Swap AVAX tokens for Ultravioleta DAO Token UVD',
       path: '/api/swap/swap-avax-uvd',
       chains: {
         source: 43114, // Avalanche C-Chain
@@ -112,7 +86,7 @@ export const swapAvaxUvd: Metadata = {
           name: 'slippage',
           type: 'text',
           label: 'Slippage Tolerance (%)',
-          value: '0.5',
+          value: '0.1',
           required: false,
           minLength: 1,
           maxLength: 100,
