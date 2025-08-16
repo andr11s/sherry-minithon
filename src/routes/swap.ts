@@ -36,28 +36,47 @@ const publicClient = createPublicClient({
 router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> => {
   try {
     console.log('Received request body:', JSON.stringify(req.body, null, 2));
+    console.log('Received headers:', JSON.stringify(req.headers, null, 2));
 
-    // Extract data from Sherry format
-    const { params, context } = req.body;
-    const {
-      amount,
+    // Extract data from x-sherry-target-url header
+    const targetUrl = req.headers['x-sherry-target-url'] as string;
+    console.log('Target URL from header:', targetUrl);
+
+    if (!targetUrl) {
+      throw new DynamicActionValidationError('Missing x-sherry-target-url header');
+    }
+
+    // Parse URL to extract query parameters
+    const url = new URL(targetUrl);
+    const params = url.searchParams;
+
+    const protocol = params.get('protocol');
+    const chainId = params.get('chainId');
+    const kolRouterAddress = params.get('kolRouterAddress');
+    const userAddress = params.get('userAddress');
+    const fromToken = params.get('fromToken');
+    const toToken = params.get('toToken');
+    const amount = params.get('amount');
+    const slippage = params.get('slippage') || '0.5';
+
+    console.log('Extracted from header URL:', {
       protocol,
-      kolRouterAddress,
-      userAddress: paramsUserAddress,
+      chainId,
+      userAddress,
       fromToken,
       toToken,
-      slippage = '0.5',
-    } = params || {};
+      amount,
+      slippage,
+    });
 
-    const { userAddress: contextUserAddress, sourceChain } = context || {};
-
-    // Use context userAddress as primary, fallback to params
-    const userAddress = contextUserAddress || paramsUserAddress;
+    // Convert string values to appropriate types
+    const amountNumber = amount ? parseFloat(amount) : 0;
+    const chainIdNumber = chainId ? parseInt(chainId) : 0;
 
     // Validation
-    // if (!amount || amount <= 0) {
-    //   throw new DynamicActionValidationError('AVAX amount must be greater than 0');
-    // }
+    if (!amount || !amountNumber || amountNumber <= 0) {
+      throw new DynamicActionValidationError(`AVAX amount must be greater than 0. Received: ${amount}`);
+    }
 
     if (!userAddress) {
       throw new DynamicActionValidationError('User address is required');
@@ -68,11 +87,11 @@ router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> =>
     }
 
     if (fromToken !== 'AVAX' || toToken !== 'UVD') {
-      throw new DynamicActionValidationError('Invalid token pair. Expected AVAX → UVD');
+      throw new DynamicActionValidationError(`Invalid token pair. Expected AVAX → UVD, got ${fromToken} → ${toToken}`);
     }
 
-    if (sourceChain && sourceChain !== 43114) {
-      throw new DynamicActionValidationError('Invalid source chain. Expected Avalanche (43114)');
+    if (chainIdNumber && chainIdNumber !== 43114) {
+      throw new DynamicActionValidationError(`Invalid chain ID. Expected Avalanche (43114), got ${chainIdNumber}`);
     }
 
     // Swap path: WAVAX → UVD (cast to the required type)
@@ -82,7 +101,7 @@ router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> =>
     const deadline = Math.floor(Date.now() / 1000) + 1200;
 
     // Convert AVAX amount to Wei
-    const avaxAmountWei = parseEther(amount.toString());
+    const avaxAmountWei = parseEther(amountNumber.toString());
 
     // Get expected output amount using getAmountsOut
     const amountsOut = await publicClient.readContract({
@@ -94,7 +113,7 @@ router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> =>
 
     // Calculate minimum amount out with slippage tolerance
     const expectedUvdAmount = amountsOut[1]; // Second element is the output amount
-    const slippageMultiplier = (100 - parseFloat(slippage)) / 100;
+    const slippageMultiplier = (100 - parseFloat(slippage as string)) / 100;
     const amountOutMin = (expectedUvdAmount * BigInt(Math.floor(slippageMultiplier * 10000))) / BigInt(10000);
 
     // Encode the function call
@@ -115,7 +134,7 @@ router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> =>
       abi: ARENA_ROUTER_ABI,
       chainId: avalanche.id,
       meta: {
-        title: `Swap ${amount || 0.01} AVAX for UVD`,
+        title: `Swap ${amountNumber} AVAX for UVD`,
       },
       rawTransaction: transaction,
       serializedTransaction: JSON.stringify(transaction),
