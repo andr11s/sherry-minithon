@@ -27,7 +27,7 @@ const ARENA_ROUTER_ABI = [
 ] as const;
 
 export const swapAvaxUvd: Metadata = {
-  baseUrl: 'https://sherry-minithon.onrender.com/api/swap',
+  baseUrl: 'https://sherry-minithon.onrender.com',
   url: 'https://chat.sherry.social/accounts/byparcero_',
   icon: 'https://sherry-minithon.onrender.com/public/img/social_drop_image_main.jpeg',
   title: 'Swap AVAX for UVD',
