@@ -61,6 +61,16 @@ export const swapAvaxUvd: Metadata = {
           description: 'Blockchain chain ID for the swap (Avalanche)',
         },
         {
+          name: 'kolRouterAddress',
+          type: 'text',
+          label: 'Creator Code (Optional)',
+          value: '0x0000000000000000000000000000000000000000',
+          required: false,
+          minLength: 1,
+          maxLength: 100,
+          description: 'Optional creator referral address for fee sharing',
+        },
+        {
           name: 'userAddress',
           type: 'text',
           label: 'User Address',

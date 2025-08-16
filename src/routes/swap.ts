@@ -35,19 +35,44 @@ const publicClient = createPublicClient({
 
 router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> => {
   try {
-    const { amount, userAddress, slippage = '0.5' } = req.body;
+    console.log('Received request body:', JSON.stringify(req.body, null, 2));
+
+    // Extract data from Sherry format
+    const { params, context } = req.body;
+    const {
+      amount,
+      protocol,
+      kolRouterAddress,
+      userAddress: paramsUserAddress,
+      fromToken,
+      toToken,
+      slippage = '0.5',
+    } = params || {};
+
+    const { userAddress: contextUserAddress, sourceChain } = context || {};
+
+    // Use context userAddress as primary, fallback to params
+    const userAddress = contextUserAddress || paramsUserAddress;
 
     // Validation
     if (!amount || amount <= 0) {
       throw new DynamicActionValidationError('AVAX amount must be greater than 0');
     }
 
-    if (!userAddress || userAddress === 'sender') {
+    if (!userAddress) {
       throw new DynamicActionValidationError('User address is required');
     }
 
     if (!userAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
       throw new DynamicActionValidationError('Invalid user address format');
+    }
+
+    if (fromToken !== 'AVAX' || toToken !== 'UVD') {
+      throw new DynamicActionValidationError('Invalid token pair. Expected AVAX → UVD');
+    }
+
+    if (sourceChain && sourceChain !== 43114) {
+      throw new DynamicActionValidationError('Invalid source chain. Expected Avalanche (43114)');
     }
 
     // Swap path: WAVAX → UVD (cast to the required type)
