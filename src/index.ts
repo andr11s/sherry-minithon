@@ -22,6 +22,14 @@ app.get('/', (req, res) => {
 app.get('/swap-avax-uvd', (req, res) => {
   console.log('Solicitud recibida en /swap-avax-uvd');
 
+  // Headers de cache de 24 horas
+  const oneDayInSeconds = 24 * 60 * 60; // 24 horas en segundos
+
+  res.set({
+    'Cache-Control': `public, max-age=${oneDayInSeconds}`,
+    Expires: new Date(Date.now() + oneDayInSeconds * 1000).toUTCString(),
+  });
+
   res.json(swapAvaxUvd);
 });
 
