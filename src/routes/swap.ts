@@ -111,9 +111,14 @@ router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> =>
       chainId: avalanche.id,
     } as const;
 
-    const response: ExecutionResponse = {
-      serializedTransaction: JSON.stringify(transaction),
+    const response = {
+      abi: ARENA_ROUTER_ABI,
       chainId: avalanche.id,
+      meta: {
+        title: `Swap ${amount || 0.01} AVAX for UVD`,
+      },
+      rawTransaction: transaction,
+      serializedTransaction: JSON.stringify(transaction),
     };
 
     res.json(response);
