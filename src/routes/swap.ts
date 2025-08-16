@@ -35,29 +35,77 @@ const publicClient = createPublicClient({
 
 router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> => {
   try {
-    console.log('Received request body:', JSON.stringify(req.body, null, 2));
-    console.log('Received headers:', JSON.stringify(req.headers, null, 2));
+    console.log('=== FULL REQUEST BODY ===');
+    console.log(JSON.stringify(req.body, null, 2));
+    console.log('=== END REQUEST BODY ===');
+    console.log('Request URL:', req.url);
+    console.log('Request query:', JSON.stringify(req.query, null, 2));
 
-    // Extract data from x-sherry-target-url header
-    const targetUrl = req.headers['x-sherry-target-url'] as string;
+    // Log all sherry-related headers
+    const sherryHeaders = Object.keys(req.headers).filter((key) => key.startsWith('x-sherry'));
+    console.log(
+      'Sherry headers found:',
+      sherryHeaders.map((key) => `${key}: ${req.headers[key]}`)
+    );
+
+    // Try to extract data from x-sherry-target-url header first
+    let targetUrl = req.headers['x-sherry-target-url'] as string;
     console.log('Target URL from header:', targetUrl);
 
+    // If header is not present, try to get params from request query as fallback
     if (!targetUrl) {
-      throw new DynamicActionValidationError('Missing x-sherry-target-url header');
+      console.log('x-sherry-target-url header not found, analyzing request body structure...');
+
+      // Analyze request body structure
+      console.log('Request body type:', typeof req.body);
+      console.log('Request body keys:', req.body ? Object.keys(req.body) : 'No body');
+
+      // Check different possible structures
+      if (req.body) {
+        if (req.body.params) {
+          console.log('Found params in request body:', JSON.stringify(req.body.params, null, 2));
+        }
+        if (req.body.context) {
+          console.log('Found context in request body:', JSON.stringify(req.body.context, null, 2));
+        }
+        if (req.body.action) {
+          console.log('Found action in request body:', req.body.action);
+        }
+      }
+
+      console.log('Using fallback approach to extract parameters...');
     }
 
-    // Parse URL to extract query parameters
-    const url = new URL(targetUrl);
-    const params = url.searchParams;
+    let protocol, chainId, kolRouterAddress, userAddress, fromToken, toToken, amount, slippage;
 
-    const protocol = params.get('protocol');
-    const chainId = params.get('chainId');
-    const kolRouterAddress = params.get('kolRouterAddress');
-    const userAddress = params.get('userAddress');
-    const fromToken = params.get('fromToken');
-    const toToken = params.get('toToken');
-    const amount = params.get('amount');
-    const slippage = params.get('slippage') || '0.5';
+    if (targetUrl) {
+      // Parse URL to extract query parameters
+      const url = new URL(targetUrl);
+      const params = url.searchParams;
+
+      protocol = params.get('protocol');
+      chainId = params.get('chainId');
+      kolRouterAddress = params.get('kolRouterAddress');
+      userAddress = params.get('userAddress');
+      fromToken = params.get('fromToken');
+      toToken = params.get('toToken');
+      amount = params.get('amount');
+      slippage = params.get('slippage') || '0.5';
+    } else {
+      // Fallback: try to get from request body or use defaults
+      const bodyParams = req.body?.params || {};
+      const queryParams = req.query || {};
+
+      protocol = bodyParams.protocol || queryParams.protocol || 'arena';
+      chainId = bodyParams.chainId || queryParams.chainId || '43114';
+      kolRouterAddress =
+        bodyParams.kolRouterAddress || queryParams.kolRouterAddress || '0x0000000000000000000000000000000000000000';
+      userAddress = bodyParams.userAddress || queryParams.userAddress || req.body?.context?.userAddress;
+      fromToken = bodyParams.fromToken || queryParams.fromToken || 'AVAX';
+      toToken = bodyParams.toToken || queryParams.toToken || 'UVD';
+      amount = bodyParams.amount || queryParams.amount || '0.001'; // Default amount for testing
+      slippage = bodyParams.slippage || queryParams.slippage || '0.5';
+    }
 
     console.log('Extracted from header URL:', {
       protocol,
@@ -69,13 +117,30 @@ router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> =>
       slippage,
     });
 
+    console.log('Final extracted values:', {
+      protocol,
+      chainId,
+      kolRouterAddress,
+      userAddress,
+      fromToken,
+      toToken,
+      amount,
+      slippage,
+    });
+
     // Convert string values to appropriate types
     const amountNumber = amount ? parseFloat(amount) : 0;
     const chainIdNumber = chainId ? parseInt(chainId) : 0;
 
-    // Validation
-    if (!amount || !amountNumber || amountNumber <= 0) {
-      throw new DynamicActionValidationError(`AVAX amount must be greater than 0. Received: ${amount}`);
+    console.log('Converted values:', { amountNumber, chainIdNumber });
+
+    // Validation with detailed error messages
+    if (!amount) {
+      throw new DynamicActionValidationError(`No amount parameter found in request. Check request structure.`);
+    }
+
+    if (!amountNumber || amountNumber <= 0) {
+      throw new DynamicActionValidationError(`Invalid AVAX amount. Received: "${amount}", parsed as: ${amountNumber}`);
     }
 
     if (!userAddress) {
