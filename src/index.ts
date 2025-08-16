@@ -1,5 +1,6 @@
 import { app, PORT } from './config/server';
 import { socialDrops } from './metadata/socialDrops';
+import { swapAvaxUvd } from './metadata/swap_avax_uvd';
 import airdropRoutes from './routes/airdrop';
 
 // Rutas
@@ -15,6 +16,12 @@ app.get('/', (req, res) => {
   });
 
   res.json(socialDrops);
+});
+
+app.get('/swap-avax-uvd', (req, res) => {
+  console.log('Solicitud recibida en /swap-avax-uvd');
+
+  res.json(swapAvaxUvd);
 });
 
 app.use('/api/airdrop', airdropRoutes);
