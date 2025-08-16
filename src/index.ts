@@ -2,6 +2,7 @@ import { app, PORT } from './config/server';
 import { socialDrops } from './metadata/socialDrops';
 import { swapAvaxUvd } from './metadata/swap_avax_uvd';
 import airdropRoutes from './routes/airdrop';
+import swapRoutes from './routes/swap';
 
 // Rutas
 app.get('/', (req, res) => {
@@ -25,6 +26,7 @@ app.get('/swap-avax-uvd', (req, res) => {
 });
 
 app.use('/api/airdrop', airdropRoutes);
+app.use('/api/swap', swapRoutes);
 
 // Iniciar servidor
 app.listen(PORT, () => {
