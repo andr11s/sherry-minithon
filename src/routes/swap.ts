@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { encodeFunctionData, parseEther } from 'viem';
+import { encodeFunctionData, parseEther, createPublicClient, http } from 'viem';
 import { avalanche } from 'viem/chains';
 import { ExecutionResponse, DynamicActionValidationError } from '../interfaces/types';
 import express from 'express';
@@ -27,21 +27,27 @@ const ARENA_ROUTER_ADDRESS = '0xf56d524d651b90e4b84dc2fffd83079698b9066e';
 const UVD_ADDRESS = '0x4Ffe7e01832243e03668E090706F17726c26d6B2';
 const WAVAX_ADDRESS = '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7';
 
-router.post('/swap-avax-uvd', express.json(), (req, res): void => {
+// Create public client for price queries
+const publicClient = createPublicClient({
+  chain: avalanche,
+  transport: http(),
+});
+
+router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> => {
   try {
-    const { avaxAmount, amountOutMin, to, slippage } = req.body;
+    const { amount, userAddress, slippage = '0.5' } = req.body;
 
     // Validation
-    if (!avaxAmount || avaxAmount <= 0) {
+    if (!amount || amount <= 0) {
       throw new DynamicActionValidationError('AVAX amount must be greater than 0');
     }
 
-    if (!amountOutMin || amountOutMin <= 0) {
-      throw new DynamicActionValidationError('Minimum UVD amount must be greater than 0');
+    if (!userAddress || userAddress === 'sender') {
+      throw new DynamicActionValidationError('User address is required');
     }
 
-    if (!to || !to.match(/^0x[a-fA-F0-9]{40}$/)) {
-      throw new DynamicActionValidationError('Invalid recipient address');
+    if (!userAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+      throw new DynamicActionValidationError('Invalid user address format');
     }
 
     // Swap path: WAVAX → UVD (cast to the required type)
@@ -51,13 +57,26 @@ router.post('/swap-avax-uvd', express.json(), (req, res): void => {
     const deadline = Math.floor(Date.now() / 1000) + 1200;
 
     // Convert AVAX amount to Wei
-    const avaxAmountWei = parseEther(avaxAmount.toString());
+    const avaxAmountWei = parseEther(amount.toString());
+
+    // Get expected output amount using getAmountsOut
+    const amountsOut = await publicClient.readContract({
+      address: ARENA_ROUTER_ADDRESS as `0x${string}`,
+      abi: ARENA_ROUTER_ABI,
+      functionName: 'getAmountsOut',
+      args: [avaxAmountWei, path],
+    });
+
+    // Calculate minimum amount out with slippage tolerance
+    const expectedUvdAmount = amountsOut[1]; // Second element is the output amount
+    const slippageMultiplier = (100 - parseFloat(slippage)) / 100;
+    const amountOutMin = (expectedUvdAmount * BigInt(Math.floor(slippageMultiplier * 10000))) / BigInt(10000);
 
     // Encode the function call
     const data = encodeFunctionData({
       abi: ARENA_ROUTER_ABI,
       functionName: 'swapExactAVAXForTokens',
-      args: [BigInt(amountOutMin), path, to as `0x${string}`, BigInt(deadline)],
+      args: [amountOutMin, path, userAddress as `0x${string}`, BigInt(deadline)],
     });
 
     const transaction = {
