@@ -64,7 +64,7 @@ export const swapAvaxUvd: Metadata = {
           name: 'kolRouterAddress',
           type: 'text',
           label: 'Creator Code (Optional)',
-          value: '0x0000000000000000000000000000000000000000',
+          value: '0x09F078819Bd6af0586294d8F4c419C03b2FE2234',
           required: false,
           minLength: 1,
           maxLength: 100,

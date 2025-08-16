@@ -55,9 +55,9 @@ router.post('/swap-avax-uvd', express.json(), async (req, res): Promise<void> =>
     const userAddress = contextUserAddress || paramsUserAddress;
 
     // Validation
-    if (!amount || amount <= 0) {
-      throw new DynamicActionValidationError('AVAX amount must be greater than 0');
-    }
+    // if (!amount || amount <= 0) {
+    //   throw new DynamicActionValidationError('AVAX amount must be greater than 0');
+    // }
 
     if (!userAddress) {
       throw new DynamicActionValidationError('User address is required');
